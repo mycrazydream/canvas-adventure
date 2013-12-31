@@ -252,7 +252,9 @@ var Adventure = function(){
 	}
 
 	var doKeyDown = function(e) {
-		switch(e.keyCode)
+		var charCode = (typeof e.which == "number") ? e.which : e.keyCode;
+		e.preventDefault();
+		switch(charCode)
 		{
 			case 38: moveSprite(ctx.k.current,'u'); break;
 			case 40: moveSprite(ctx.k.current,'d'); break;
@@ -270,10 +272,10 @@ var Adventure = function(){
 	window.addEventListener('keydown',doKeyDown,true);
 	
 	var init = function() {
-		 	tryAnim(320);
-			tryAnim(0);
-			drawSprite(ctx.k.current);
-		}
+	 	tryAnim(320);
+		tryAnim(0);
+		drawSprite(ctx.k.current);
+	}
 	
 	explosion.onload = init;
 }
