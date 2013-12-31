@@ -10,26 +10,27 @@ var Adventure = function(){
 		KNIGHT_HEALTH: 5,
 		ENEMY_W: 30,
 		ENEMY_H: 30,
-		ENEMY_SPEED: 50
+		ENEMY_SPEED: 50,
+		IMG_DIR: '/images/'
 	}
 	
 	var knight = {x: 30, y:60, w:C.KNIGHT_W, h:C.KNIGHT_H, lbl:'knight', is_hurt:false, health: C.KNIGHT_HEALTH, score:0};
 	var knightPng = new Image(25,30);
-	knightPng.src = 'shion3.png';
+	knightPng.src = C.IMG_DIR+'shion3.png';
 	knight.png = knightPng;
 	
 	var knife = {x: 0, y: 0, lbl:'weapon'};
 	var knifePng = new Image();
-	knifePng.src = 'Dagger1.gif';
+	knifePng.src = C.IMG_DIR+'Dagger1.gif';
 	knife.png = knifePng;
 	
 	var bg = new Image();
-	bg.src = 'dungeon1.png';
+	bg.src = C.IMG_DIR+'dungeon1.png';
 	var explosion = new Image();
-	explosion.src = 'explosprite.png';
+	explosion.src = C.IMG_DIR+'explosprite.png';
 	
 	var enemyPng = new Image(25,30);
-	enemyPng.src = 'badguy.png';
+	enemyPng.src = C.IMG_DIR+'badguy.png';
 	var enemy_on_screen = false;
 	var createEnemy = function(){
 		return {x: C.CANVAS_W, y: undefined, w:C.ENEMY_W, h:C.ENEMY_H, lbl:'enemy', png:enemyPng};
