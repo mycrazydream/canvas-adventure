@@ -1,0 +1,41 @@
+<html>
+<head>
+<title>Canvas Adventure</title>
+<script src="adventure.js"></script>
+<script>
+window.onload = function(){
+  var adv = new Adventure();
+}
+</script>
+</head>
+<body>
+<div id='gametitle'>
+	<h1>Canvas Adventure</h1>
+	<h2>version 0.06</h2>
+</div>
+<div id='windowcontainer'>
+<canvas id="bgLayer" class="gameLayer" height="160" width="300"></canvas>
+
+<canvas id="playerLayer" class="gameLayer" height="160" width="300">
+Your browser does not support canvas tag. Go get FireFox 1.5beta
+</canvas>
+
+<canvas id="weaponLayer" class="gameLayer" height="160" width="300"></canvas>
+
+<canvas id="enemyLayer" class="gameLayer" height="160" width="300"></canvas>
+
+<div id="scoreLayer" class="gameLayer">
+	Score: 0
+</div>
+<div id="lifeLayer" class="gameLayer">
+	Life: &hearts; &hearts; &hearts; &hearts; &hearts;
+</div>
+
+</div>
+
+<div id='ctrlpanel'>
+	<p>Arrow keys move around.</p>
+	<p>Spacebar jumps, and 's' shoots dagger</p>
+</div>
+</body>
+</html>
