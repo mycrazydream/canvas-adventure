@@ -1,0 +1,45 @@
+/* TODO: Add a full css-reset like YUI or something */
+body{ 
+  margin:0;
+  padding:0;
+  width:100%;
+  background-color: #666;
+}
+#windowcontainer { 
+  position:relative;
+  height:160px;
+  margin-left:12px;
+}
+h1 {
+  font-size: 100%;
+}
+h2 {
+  font-size: 80%;
+}
+h3 {
+  font-size: 75%;
+}
+h1, h2, h3 {
+  margin: 5px;
+}
+p { 
+  padding: 0; 
+  margin: 0; 
+}
+.gameLayer { 
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
+#scoreLayer {
+  font-family: arial;
+  font-weight: bold;
+  color: #FFFFFF;
+  left: 10px;
+}
+#lifeLayer {
+  font-family: arial;
+  font-weight: bold;
+  color: red;
+  left: 150px;
+}
