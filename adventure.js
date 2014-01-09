@@ -218,7 +218,7 @@ var Adventure = function(){
 	}
 	
 	var explode = function(x,y){
-        if(x==3){playSound('bomb-03.wav')}
+        if(x==3){playSound(C.IMG_DIR+'bomb.wav')}
 		x--;
 		if(x===-1){
 			y--;
