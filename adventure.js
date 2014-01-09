@@ -11,7 +11,8 @@ var Adventure = function(){
 		ENEMY_W: 30,
 		ENEMY_H: 30,
 		ENEMY_SPEED: 50,
-		IMG_DIR: '/images/'
+		IMG_DIR: '/images/',
+		LL: $('#lifeLayer')
 	}
 	
 	var that = this; //identifier so the functions don't get uppity
@@ -154,13 +155,20 @@ var Adventure = function(){
 		}
 		that.drawSprite(o);
 	}
-	
+
 	var killKnight = function(){
 		clearTimeout(that.ctx.k.current.to);
-		window.removeEventListener('keydown',doKeyDown,true);
+		window.removeEventListener('keydown',that.doKeyDown,true);
 		var body = document.getElementsByTagName('body')[0];
 		var mask = document.createElement('div');
 		var gameOver = document.createElement('h1');
+		var lD = $(C.LL).html('<span class="dead">d</span> <span class="dead">e</span> <span class="dead">a</span> <span class="dead">d</span>');
+		for (var i=1; i < 256; i++) {
+			if(i/64==1 || i/64==2 || i/64==3 || i/64==4){
+				$($(C.LL).children('span')[i]);
+			}
+		};
+
 		gameOver.innerHTML = 'Game Over';
 		gameOver.style.color = 'DarkRed';
 		gameOver.style.fontSize = '10em';
@@ -184,7 +192,7 @@ var Adventure = function(){
 		else{
 			var lifeStr = 'Life: ';
 			for(var i=0;i<o.health;i++){ lifeStr+=' &hearts;' }
-			$('#lifeLayer').innerHTML = lifeStr;
+			C.LL.html(lifeStr);
 			o.is_hurt=true;
 			that.ctx.k.globalAlpha = .5;
 			moveSprite(o);
