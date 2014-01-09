@@ -14,6 +14,49 @@ var Adventure = function(){
 		IMG_DIR: '/images/'
 	}
 	
+	var that = this; //identifier so the functions don't get uppity
+	
+	this.drawSprite = function(o){
+		var c = that.ctx[o.lbl.substring(0,1)];
+		c.save();
+		c.drawImage(o.png, o.x, o.y);
+		c.restore();
+	}
+	
+	this.tryAnim = function(i){
+
+		if(i > -322){
+			that.ctx.b.save();
+			that.ctx.b.drawImage(bg, i, 0);
+			if(Math.random()>.998 && i%2==0 && !enemy_on_screen){ enemyAttack() }
+			setTimeout(function(){ that.tryAnim(i-2) },10);
+			that.ctx.b.restore();
+		}
+		else {
+			that.ctx.b.save();
+			setTimeout(function(){ that.tryAnim(320) },10);
+			that.ctx.b.restore();
+		}
+	}
+	
+	this.doKeyDown = function(e) {
+		var charCode = (typeof e.which == "number") ? e.which : e.keyCode;
+		e.preventDefault();
+		switch(charCode)
+		{
+			case 38: moveSprite(that.ctx.k.current,'u'); break;
+			case 40: moveSprite(that.ctx.k.current,'d'); break;
+			case 37: moveSprite(that.ctx.k.current,'l'); break;
+			case 39: moveSprite(that.ctx.k.current,'r'); break;
+			case 83: 
+				clearTimeout(that.ctx.w.current.to);
+				that.ctx.w.current = {};
+				shootKnife(that.ctx.k.current.x+5, that.ctx.k.current.y+5);
+			break;
+			case 32: if(!this.jumping){ jumpKnight(0) }; break;
+		}
+	}
+	
 	var knight = {x: 30, y:60, w:C.KNIGHT_W, h:C.KNIGHT_H, lbl:'knight', is_hurt:false, health: C.KNIGHT_HEALTH, score:0};
 	var knightPng = new Image(25,30);
 	knightPng.src = C.IMG_DIR+'shion3.png';
@@ -26,8 +69,8 @@ var Adventure = function(){
 	
 	var bg = new Image();
 	bg.src = C.IMG_DIR+'dungeon1.png';
-	var explosion = new Image();
-	explosion.src = C.IMG_DIR+'explosprite.png';
+	this.explosion = new Image();
+	this.explosion.src = C.IMG_DIR+'explosprite.png';
 	
 	var enemyPng = new Image(25,30);
 	enemyPng.src = C.IMG_DIR+'badguy.png';
@@ -36,32 +79,15 @@ var Adventure = function(){
 		return {x: C.CANVAS_W, y: undefined, w:C.ENEMY_W, h:C.ENEMY_H, lbl:'enemy', png:enemyPng};
 	}
 	
-	var ctx = {
+	this.ctx = {
 		w: get('weaponLayer').getContext("2d"),
 		b: get('bgLayer').getContext("2d"),
 		k: get('playerLayer').getContext("2d"),
 		e: get('enemyLayer').getContext("2d")
 	}
-	ctx.e.current = {}
-	ctx.w.current = {}
-	ctx.k.current = knight;
-
-	var tryAnim = function(i){
-
-		if(i > -322){
-			ctx.b.save();
-			ctx.b.drawImage(bg, i, 0);
-			if(Math.random()>.998 && i%2==0 && !enemy_on_screen){ enemyAttack() }
-			setTimeout(function(){ tryAnim(i-2) },10);
-			ctx.b.restore();
-		}
-		else {
-			ctx.b.save();
-			setTimeout(function(){ tryAnim(320) },10);
-			ctx.b.restore();
-		}
-	}
-
+	this.ctx.e.current = {}
+	this.ctx.w.current = {}
+	this.ctx.k.current = knight;
 
     //TODO add sound features
     var sndLib = {};
@@ -76,18 +102,19 @@ var Adventure = function(){
 	
 	var generateRandomEntry = function(){ return Math.floor(Math.random() * (140 - 40 + 1)) + 40; }
 	
+	
 	var enemyAttack = function(){
-		ctx.e.current = new createEnemy();
-		ctx.e.current.y = generateRandomEntry();
-		if(typeof ctx.e.current.y!=='undefined'){
-			setTimeout(function(){ moveEnemy(ctx.e.current) },C.ENEMY_SPEED);
+		that.ctx.e.current = new createEnemy();
+		that.ctx.e.current.y = generateRandomEntry();
+		if(typeof that.ctx.e.current.y!=='undefined'){
+			setTimeout(function(){ moveEnemy(that.ctx.e.current) },C.ENEMY_SPEED);
 			enemy_on_screen = true;
 		}
 	}
 
 	var jumpKnight = function(x){
-		var c = ctx.k,
-			o = ctx.k.current;
+		var c = that.ctx.k,
+			o = that.ctx.k.current;
 		if(x>10){ this.jumping=false;return; }
 		else if(x===0){
 			this.jumping=true;
@@ -100,19 +127,14 @@ var Adventure = function(){
 		o.x+=1;
 		o.y=y;
 
-		drawSprite(o);
+		that.drawSprite(o);
 		setTimeout(function(){ jumpKnight(x+1) },50);
 	}
 	
-	var drawSprite = function(o){
-		var c = ctx[o.lbl.substring(0,1)];
-		c.save();
-		c.drawImage(o.png, o.x, o.y);
-		c.restore();
-	}
+	
 
 	var moveSprite = function(o,dir){
-		var c = ctx[o.lbl.substring(0,1)];
+		var c = that.ctx[o.lbl.substring(0,1)];
 		c.clearRect(o.x,o.y,o.w,o.h);
 		switch(dir)
 		{	
@@ -130,11 +152,11 @@ var Adventure = function(){
 			break;
 			default://move nowhere
 		}
-		drawSprite(o);
+		that.drawSprite(o);
 	}
 	
 	var killKnight = function(){
-		clearTimeout(ctx.k.current.to);
+		clearTimeout(that.ctx.k.current.to);
 		window.removeEventListener('keydown',doKeyDown,true);
 		var body = document.getElementsByTagName('body')[0];
 		var mask = document.createElement('div');
@@ -162,11 +184,11 @@ var Adventure = function(){
 		else{
 			var lifeStr = 'Life: ';
 			for(var i=0;i<o.health;i++){ lifeStr+=' &hearts;' }
-			get('lifeLayer').innerHTML = lifeStr;
+			$('#lifeLayer').innerHTML = lifeStr;
 			o.is_hurt=true;
-			ctx.k.globalAlpha = .5;
+			that.ctx.k.globalAlpha = .5;
 			moveSprite(o);
-			setTimeout(function(){o.is_hurt=false;ctx.k.globalAlpha=1;moveSprite(o)},2000);
+			setTimeout(function(){o.is_hurt=false;that.ctx.k.globalAlpha=1;moveSprite(o)},2000);
 		}
 	}
 	
@@ -177,20 +199,20 @@ var Adventure = function(){
 		if(o.x > 0)
 		{
 			o.x-=10;
-			ctx.e.clearRect(0,0,C.CANVAS_W,C.CANVAS_H);
-			drawSprite(o);
-			if(!ctx.k.current.is_hurt)
-			if(Math.abs(o.x-ctx.k.current.x)<=30 && Math.abs(o.y-ctx.k.current.y)<=30) {
-				hurtKnight(ctx.k.current);
+			that.ctx.e.clearRect(0,0,C.CANVAS_W,C.CANVAS_H);
+			that.drawSprite(o);
+			if(!that.ctx.k.current.is_hurt)
+			if(Math.abs(o.x-that.ctx.k.current.x)<=30 && Math.abs(o.y-that.ctx.k.current.y)<=30) {
+				hurtKnight(that.ctx.k.current);
 			}
 			o.to = setTimeout(function(e){ moveEnemy(o) }, C.ENEMY_SPEED);
 		}
 		else
 		{
-			clearTimeout(ctx.e.current.to);
-			ctx.e.clearRect(0,0,C.CANVAS_W,C.CANVAS_H);
+			clearTimeout(that.ctx.e.current.to);
+			that.ctx.e.clearRect(0,0,C.CANVAS_W,C.CANVAS_H);
 			removeEnemy();
-			ctx.k.current.score -= 50;
+			that.ctx.k.current.score -= 50;
 			updateScore();
 		}	
 	}
@@ -204,79 +226,51 @@ var Adventure = function(){
 		}
 		
 		if(y>=0){ 
-			ctx.e.drawImage(explosion,x*30,y*30,30,30,ctx.e.current.x,ctx.e.current.y,30,30);
-			ctx.e.current.to = setTimeout(function(){explode(x,y)},30) 
+			that.ctx.e.drawImage(that.explosion,x*30,y*30,30,30,that.ctx.e.current.x,that.ctx.e.current.y,30,30);
+			that.ctx.e.current.to = setTimeout(function(){explode(x,y)},30) 
 		}
 		else{ 
-			clearTimeout(ctx.e.current.to);
+			clearTimeout(that.ctx.e.current.to);
 			removeEnemy() 
 		}
 	}
 	
 	var destroyEnemy = function(){
-		clearTimeout(ctx.e.current.to);
-		clearTimeout(ctx.w.current.to);
-		ctx.w.current = {};
-		ctx.e.clearRect(0,0,C.CANVAS_W,C.CANVAS_H);
+		clearTimeout(that.ctx.e.current.to);
+		clearTimeout(that.ctx.w.current.to);
+		that.ctx.w.current = {};
+		that.ctx.e.clearRect(0,0,C.CANVAS_W,C.CANVAS_H);
 		explode(4,3);
 	}
 	
 	var removeEnemy = function(o){
 		enemy_on_screen = false;
-		ctx.e.clearRect(0,0,C.CANVAS_W,C.CANVAS_H);
-		ctx.e.current = {};
+		that.ctx.e.clearRect(0,0,C.CANVAS_W,C.CANVAS_H);
+		that.ctx.e.current = {};
 	}
 
-	var updateScore = function(){ get('scoreLayer').innerHTML = 'Score: '+ ctx.k.current.score }
+	var updateScore = function(){ $('#scoreLayer').innerHTML = 'Score: '+ that.ctx.k.current.score }
 	var moveKnife = function(){
 		if(knife.x < C.CANVAS_W){
 			knife.x+=10;
-			ctx.w.clearRect(0,0,C.CANVAS_W,C.CANVAS_H);
-			drawSprite(knife);
-			if(ctx.w.current.x && ctx.e.current.x){
-				if((ctx.e.current.x-ctx.w.current.x)<=20 &&
-					Math.abs(ctx.w.current.y-ctx.e.current.y)<=30){
+			that.ctx.w.clearRect(0,0,C.CANVAS_W,C.CANVAS_H);
+			that.drawSprite(knife);
+			if(that.ctx.w.current.x && that.ctx.e.current.x){
+				if((that.ctx.e.current.x-that.ctx.w.current.x)<=20 &&
+					Math.abs(that.ctx.w.current.y-that.ctx.e.current.y)<=30){
 					destroyEnemy();
-					ctx.k.current.score += 100;
+					that.ctx.k.current.score += 100;
 					updateScore();
 				}
 			}
-			ctx.w.current.to = setTimeout(moveKnife, 30);
+			that.ctx.w.current.to = setTimeout(moveKnife, 30);
 		}
 	}
 
 	var shootKnife = function (x,y){
 		knife.x = x;
 		knife.y = y;
-		ctx.w.current = knife;
+		that.ctx.w.current = knife;
 		moveKnife();
 	}
-
-	var doKeyDown = function(e) {
-		var charCode = (typeof e.which == "number") ? e.which : e.keyCode;
-		e.preventDefault();
-		switch(charCode)
-		{
-			case 38: moveSprite(ctx.k.current,'u'); break;
-			case 40: moveSprite(ctx.k.current,'d'); break;
-			case 37: moveSprite(ctx.k.current,'l'); break;
-			case 39: moveSprite(ctx.k.current,'r'); break;
-			case 83: 
-				clearTimeout(ctx.w.current.to);
-				ctx.w.current = {};
-				shootKnife(ctx.k.current.x+5, ctx.k.current.y+5);
-			break;
-			case 32: if(!this.jumping){ jumpKnight(0) }; break;
-		}
-	}
-	
-	window.addEventListener('keydown',doKeyDown,true);
-	
-	var init = function() {
-	 	tryAnim(320);
-		tryAnim(0);
-		drawSprite(ctx.k.current);
-	}
-	
-	explosion.onload = init;
 }

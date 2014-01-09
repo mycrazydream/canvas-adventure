@@ -1,15 +1,24 @@
 <html>
 <head>
 <title>Canvas Adventure</title>
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <script src="adventure.js"></script>
 <script>
-var help = 'Tools->Options->Advanced->General';
-if(navigator.userAgent.match('Macintosh')){ help='Firefox->Preferences->Advanced->General' };
-window.onload = function(){
-  $('#help').html(help);
-  var adv = new Adventure();
-}
+$(document).ready(function($){
+	var adv = new Adventure();
+	window.addEventListener('keydown',adv.doKeyDown,true);
+	var help = 'Tools->Options->Advanced->General';
+	if(navigator.userAgent.match('Macintosh')){ help='Firefox->Preferences->Advanced->General' };
+	
+	var init = function() {
+		$('#help').html(help);
+	 	adv.tryAnim(320);
+		adv.tryAnim(0);
+		adv.drawSprite(adv.ctx.k.current);
+	}
+	
+	adv.explosion.onload = init;
+});
 </script>
 </head>
 <body>
