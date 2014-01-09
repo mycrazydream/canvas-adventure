@@ -50,3 +50,4 @@ p {
   color: red;
   left: 150px;
 }
+.dead{ color:'#FF0000';display:'none';visibility:'hidden';font-size:'10px'; }
