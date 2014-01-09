@@ -4,7 +4,10 @@
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <script src="adventure.js"></script>
 <script>
+var help = 'Tools->Options->Advanced->General';
+if(navigator.userAgent.match('Macintosh')){ help='Firefox->Preferences->Advanced->General' };
 window.onload = function(){
+  $('#help').html(help);
   var adv = new Adventure();
 }
 </script>
