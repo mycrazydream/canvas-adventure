@@ -14,6 +14,7 @@ $(document).ready(function($){
 	
 	var init = function() {
 		$('#help').html(help);
+		$('#bgLayer').focus();
 	 	adv.tryAnim(320);
 		adv.tryAnim(0);
 		adv.drawSprite(adv.ctx.k.current);
@@ -27,7 +28,7 @@ $(document).ready(function($){
 <body>
 <div id='gametitle'>
 	<h1>Canvas Adventure</h1>
-	<h2>version 0.07</h2>
+	<h2>version 0.08</h2>
 </div>
 <div id='windowcontainer'>
 <canvas id="bgLayer" class="gameLayer" height="160" width="300"></canvas>
