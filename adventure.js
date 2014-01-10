@@ -7,12 +7,13 @@ var Adventure = function(){
 		CANVAS_H: 160,
 		KNIGHT_W: 25,
 		KNIGHT_H: 30,
-		KNIGHT_HEALTH: 5,
+		KNIGHT_HEALTH: 1,
 		ENEMY_W: 30,
 		ENEMY_H: 30,
 		ENEMY_SPEED: 50,
 		IMG_DIR: '/images/',
-		LL: $('#lifeLayer')
+		LL: $('#lifeLayer'),
+		BG_WIDTH: 320
 	}
 	
 	var that = this; //identifier so the functions don't get uppity
@@ -35,7 +36,7 @@ var Adventure = function(){
 		}
 		else {
 			that.ctx.b.save();
-			setTimeout(function(){ that.tryAnim(320) },10);
+			setTimeout(function(){ that.tryAnim(C.BG_WIDTH) },10);
 			that.ctx.b.restore();
 		}
 	}
@@ -162,25 +163,27 @@ var Adventure = function(){
 		var body = document.getElementsByTagName('body')[0];
 		var mask = document.createElement('div');
 		var gameOver = document.createElement('h1');
+		gameOver.style.opacity=0;
 		var lD = $(C.LL).html('<span class="dead">d</span> <span class="dead">e</span> <span class="dead">a</span> <span class="dead">d</span>');
-		for (var i=1; i < 256; i++) {
-			if(i/64==1 || i/64==2 || i/64==3 || i/64==4){
-				$($(C.LL).children('span')[i]);
-			}
-		};
-
-		gameOver.innerHTML = 'Game Over';
-		gameOver.style.color = 'DarkRed';
-		gameOver.style.fontSize = '10em';
-		gameOver.style.margin = '40px auto auto';
-		mask.style.backgroundColor = '#FF0000';
-		mask.style.opacity = '.5';
-		mask.style.width = '100%';
-		mask.style.height = '100%';
-		mask.style.position = 'absolute';
-		mask.style.zIndex = '1000';
+		var complete=0
+		$(C.LL).children('span').each(function(i){$(this).animate({opacity:'.6'},5000,gameOverMask(gameOver,mask,body))});
+	}
+	
+	var gameOverMask = function (gameOver,mask,body){
+		gameOver.innerHTML 		 		= 'Game Over';
+		gameOver.style.backgroundColor  = '#FF0000',
+		gameOver.style.fontSize  		= '13em';
+		gameOver.style.color	 		= 'DarkRed'
+		gameOver.style.margin			= '0px';
+		mask.style.width 		 		= '100%';
+		mask.style.height 		 		= '100%';
+		mask.style.position 	 		= 'absolute';
+		mask.style.zIndex 		 		= '1000';
 		mask.appendChild(gameOver);
 		var maskDom = body.insertBefore(mask,body.firstChild);
+		$(gameOver).animate({
+			opacity: ".5"
+		}, 3000, function(){});
 	}
 	
 	var hurtKnight = function(o){
