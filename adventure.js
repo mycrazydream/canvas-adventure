@@ -1,13 +1,16 @@
 var get = function(id){ var el = document.getElementById(id); return el; }
 
 var Adventure = function(){
-
+	
+	/* Constants
+	Change for alter gameplay. Simple change would be to alter KNIGHT_HEALTH to adjust difficulty. 
+	I would not change LL or the sprite dimensions unless you plan on changing the sprites. */
 	var C = {
 		CANVAS_W: 300,
 		CANVAS_H: 160,
 		KNIGHT_W: 25,
 		KNIGHT_H: 30,
-		KNIGHT_HEALTH: 1,
+		KNIGHT_HEALTH: 5,
 		ENEMY_W: 30,
 		ENEMY_H: 30,
 		ENEMY_SPEED: 50,
@@ -25,6 +28,7 @@ var Adventure = function(){
 		c.restore();
 	}
 	
+	//Get the game animation going, and continuing as the background is one scrolling sprite.
 	this.tryAnim = function(i){
 
 		if(i > -322){
@@ -41,6 +45,7 @@ var Adventure = function(){
 		}
 	}
 	
+	//Player controls
 	this.doKeyDown = function(e) {
 		var charCode = (typeof e.which == "number") ? e.which : e.keyCode;
 		e.preventDefault();
@@ -59,21 +64,25 @@ var Adventure = function(){
 		}
 	}
 	
+	// Knight object and sprite
 	var knight = {x: 30, y:60, w:C.KNIGHT_W, h:C.KNIGHT_H, lbl:'knight', is_hurt:false, health: C.KNIGHT_HEALTH, score:0};
 	var knightPng = new Image(25,30);
 	knightPng.src = C.IMG_DIR+'shion3.png';
 	knight.png = knightPng;
 	
+	//Knife object and sprite
 	var knife = {x: 0, y: 0, lbl:'weapon'};
 	var knifePng = new Image();
 	knifePng.src = C.IMG_DIR+'Dagger1.gif';
 	knife.png = knifePng;
 	
+	// Background sprite and explosion sprite map
 	var bg = new Image();
 	bg.src = C.IMG_DIR+'dungeon1.png';
 	this.explosion = new Image();
 	this.explosion.src = C.IMG_DIR+'explosprite.png';
 	
+	// Enemy sprite and object
 	var enemyPng = new Image(25,30);
 	enemyPng.src = C.IMG_DIR+'badguy.png';
 	var enemy_on_screen = false;
@@ -81,6 +90,7 @@ var Adventure = function(){
 		return {x: C.CANVAS_W, y: undefined, w:C.ENEMY_W, h:C.ENEMY_H, lbl:'enemy', png:enemyPng};
 	}
 	
+	// Canvas layers
 	this.ctx = {
 		w: get('weaponLayer').getContext("2d"),
 		b: get('bgLayer').getContext("2d"),
@@ -102,6 +112,7 @@ var Adventure = function(){
         if(sndLib[file]){ sndLib[file].stop() }
     }
 	
+	// Give enemies random entry to surprise player
 	var generateRandomEntry = function(){ return Math.floor(Math.random() * (140 - 40 + 1)) + 40; }
 	
 	
@@ -113,7 +124,8 @@ var Adventure = function(){
 			enemy_on_screen = true;
 		}
 	}
-
+	
+	// Added jump ability to hero
 	var jumpKnight = function(x){
 		var c = that.ctx.k,
 			o = that.ctx.k.current;
@@ -157,6 +169,7 @@ var Adventure = function(){
 		that.drawSprite(o);
 	}
 
+	// Our hero is dead, what shall we do but inform the player in an obvious manner
 	var killKnight = function(){
 		clearTimeout(that.ctx.k.current.to);
 		window.removeEventListener('keydown',that.doKeyDown,true);
@@ -186,6 +199,7 @@ var Adventure = function(){
 		}, 3000, function(){});
 	}
 	
+	// Collision detection, deplete hero's life. Kill him if life reaches 0.
 	var hurtKnight = function(o){
 		o.health--;
 		if(o.health<=0){
@@ -228,6 +242,7 @@ var Adventure = function(){
 		}	
 	}
 	
+	// Explosion animation through image map
 	var explode = function(x,y){
         if(x==3){playSound(C.IMG_DIR+'bomb.wav')}
 		x--;
