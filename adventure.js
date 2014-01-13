@@ -178,7 +178,7 @@ var Adventure = function(){
 		var gameOver = document.createElement('h1');
 		gameOver.style.opacity=0;
 		var lD = $(C.LL).html('<span class="dead">d</span> <span class="dead">e</span> <span class="dead">a</span> <span class="dead">d</span>');
-		var complete=0
+		var complete=0;
 		$(C.LL).children('span').each(function(i){$(this).animate({opacity:'.6'},5000,gameOverMask(gameOver,mask,body))});
 	}
 	
