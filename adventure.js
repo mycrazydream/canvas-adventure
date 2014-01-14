@@ -15,6 +15,7 @@ var Adventure = function(){
 		ENEMY_H: 30,
 		ENEMY_SPEED: 50,
 		IMG_DIR: '/images/',
+		SOUND_DIR: '/sounds/',
 		LL: $('#lifeLayer'),
 		BG_WIDTH: 320
 	}
@@ -102,16 +103,36 @@ var Adventure = function(){
 	this.ctx.k.current = knight;
 
     //TODO add sound features
-    var sndLib = {};
-    function playSound(file) {
-        sndLib[file] = new Audio(file);
-        sndLib[file].play();
+    var sound = {
+		death: 'death.wav',
+		damage: 'damage.wav',
+		explosion: 'explosion.wav',
+		hero_footsteps: 'hero_footsteps.wav',
+		hero_hurt: 'hero_hurt.wav',
+		howl_close: 'howl_close.wav',
+		howl_distant: 'howl_distant.wav',
+		monster_stalk: 'monster_stalk.wav'
+	},
+	key = {};
+    
+	var playSound = function(file, loop) {
+		key = C.IMG_DIR+file.split('.')[0];
+        sound[key] = new Audio(C.SOUND_DIR+file);
+        sound[key].play();
+		if(loop===true){
+			sound[key].addEventListener('ended', function() {
+			    this[key].currentTime = 0;
+			    this[key].play();
+			}, false);
+			sound[key].play();
+		}
     }
 
-    function stopSound(file) {
-        if(sndLib[file]){ sndLib[file].stop() }
+    var stopSound = function(file) {
+		key = file.toString().split('.')[0];
+        if(sound[key]!==undefined){ sound[key].stop() }
     }
-	
+
 	// Give enemies random entry to surprise player
 	var generateRandomEntry = function(){ return Math.floor(Math.random() * (140 - 40 + 1)) + 40; }
 	
@@ -176,6 +197,7 @@ var Adventure = function(){
 		var body = document.getElementsByTagName('body')[0];
 		var mask = document.createElement('div');
 		var gameOver = document.createElement('h1');
+		playSound('death.wav',false);
 		gameOver.style.opacity=0;
 		var lD = $(C.LL).html('<span class="dead">d</span> <span class="dead">e</span> <span class="dead">a</span> <span class="dead">d</span>');
 		var complete=0;
@@ -207,13 +229,19 @@ var Adventure = function(){
 			killKnight();
 		}
 		else{
+			playSound('hurt.wav',false);
 			var lifeStr = 'Life: ';
 			for(var i=0;i<o.health;i++){ lifeStr+=' &hearts;' }
 			C.LL.html(lifeStr);
 			o.is_hurt=true;
 			that.ctx.k.globalAlpha = .5;
 			moveSprite(o);
-			setTimeout(function(){o.is_hurt=false;that.ctx.k.globalAlpha=1;moveSprite(o)},2000);
+ 			
+			setTimeout(function(){ 
+				o.is_hurt=false;
+				that.ctx.k.globalAlpha=1;
+				moveSprite(o)},
+			2000);
 		}
 	}
 	
@@ -244,7 +272,7 @@ var Adventure = function(){
 	
 	// Explosion animation through image map
 	var explode = function(x,y){
-        if(x==3){playSound(C.IMG_DIR+'bomb.wav')}
+        if(x==3){playSound('explosion.wav',false)}
 		x--;
 		if(x===-1){
 			y--;
@@ -252,8 +280,20 @@ var Adventure = function(){
 		}
 		
 		if(y>=0){ 
-			that.ctx.e.drawImage(that.explosion,x*30,y*30,30,30,that.ctx.e.current.x,that.ctx.e.current.y,30,30);
-			that.ctx.e.current.to = setTimeout(function(){explode(x,y)},30) 
+				that.ctx.e.drawImage(
+					that.explosion,
+					x*30,
+					y*30,
+					30,
+					30,
+					that.ctx.e.current.x,
+					that.ctx.e.current.y,
+					30,
+					30
+				);
+			    that.ctx.e.current.to = setTimeout(
+					function(){explode(x,y)},30
+				);
 		}
 		else{ 
 			clearTimeout(that.ctx.e.current.to);
@@ -275,7 +315,9 @@ var Adventure = function(){
 		that.ctx.e.current = {};
 	}
 
-	var updateScore = function(){ $('#scoreLayer').innerHTML = 'Score: '+ that.ctx.k.current.score }
+	var updateScore = function(){ 
+		 $('#scoreLayer').innerHTML = 'Score: '+ that.ctx.k.current.score;
+	}
 	var moveKnife = function(){
 		if(knife.x < C.CANVAS_W){
 			knife.x+=10;
@@ -297,6 +339,7 @@ var Adventure = function(){
 		knife.x = x;
 		knife.y = y;
 		that.ctx.w.current = knife;
+		//playSound() TODO get woosh sound
 		moveKnife();
 	}
 }
