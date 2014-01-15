@@ -3,9 +3,11 @@ var get = function(id){ var el = document.getElementById(id); return el; }
 var Adventure = function(){
 	
 	/* Constants
-	Change for alter gameplay. Simple change would be to alter KNIGHT_HEALTH to adjust difficulty. 
+	Change to alter gameplay. Simple change would be to alter KNIGHT_HEALTH to adjust difficulty. 
 	I would not change LL or the sprite dimensions unless you plan on changing the sprites. */
+	var isProduction = (new RegExp('mycrazydream')).test(document.location.href);
 	var C = {
+		URL: document.location.href,
 		CANVAS_W: 300,
 		CANVAS_H: 160,
 		KNIGHT_W: 25,
@@ -14,11 +16,15 @@ var Adventure = function(){
 		ENEMY_W: 30,
 		ENEMY_H: 30,
 		ENEMY_SPEED: 50,
-		IMG_DIR: '/images/',
-		SOUND_DIR: '/sounds/',
+		IMG_DIR: (isProduction===true)
+					? '/examples/canvas-adventure/images/'
+					: '/images',
+		SOUND_DIR: (isProduction===true)
+					? '/examples/canvas-adventure/sounds/'
+					: '/sounds/',
 		LL: $('#lifeLayer'),
 		BG_WIDTH: 320
-	}
+	};
 	
 	var that = this; //identifier so the functions don't get uppity
 	
