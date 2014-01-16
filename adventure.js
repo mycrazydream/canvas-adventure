@@ -57,7 +57,7 @@ var Adventure = function(){
 	Adventure.prototype.paused = false;
 	
 	//TODO add sound features
-    var sound = {
+	var sound = {
 		death: 'death.wav',
 		damage: 'damage.wav',
 		explosion: 'explosion.wav',
@@ -91,14 +91,15 @@ var Adventure = function(){
 		}
     }
 
-    var stopSound = function(file) {
+	var stopSound = function(file) {
 		key = file.toString().split('.')[0];
-        if(sound[key]!==undefined){ sound[key].stop() }
-    }
+		if(sound[key]!==undefined){ sound[key].stop() }
+	}
 
 	// Give enemies random entry to surprise player
-	var generateRandomEntry = function(){ return Math.floor(Math.random() * (140 - 40 + 1)) + 40; }
-	
+	var generateRandomEntry = function(){ 
+		return Math.floor(Math.random() * (140 - 40 + 1)) + 40; 
+	}
 	
 	var enemyAttack = function(){
 		var that = this;
@@ -178,15 +179,15 @@ var Adventure = function(){
 	}
 	
 	var gameOverMask = function (gameOver,mask,body){
-		gameOver.innerHTML 		 		= 'Game Over';
-		gameOver.style.backgroundColor  = '#FF0000',
-		gameOver.style.fontSize  		= '13em';
-		gameOver.style.color	 		= 'DarkRed'
+		gameOver.innerHTML				= 'Game Over';
+		gameOver.style.backgroundColor	= '#FF0000',
+		gameOver.style.fontSize			= '13em';
+		gameOver.style.color			= 'DarkRed'
 		gameOver.style.margin			= '0px';
-		mask.style.width 		 		= '100%';
-		mask.style.height 		 		= '100%';
-		mask.style.position 	 		= 'absolute';
-		mask.style.zIndex 		 		= '1000';
+		mask.style.width				= '100%';
+		mask.style.height				= '100%';
+		mask.style.position				= 'absolute';
+		mask.style.zIndex				= '1000';
 		mask.appendChild(gameOver);
 		var maskDom = body.insertBefore(mask,body.firstChild);
 		$(gameOver).animate({
@@ -253,20 +254,20 @@ var Adventure = function(){
 		}
 		
 		if(y>=0){ 
-				ctx.e.drawImage(
-					explosion,
-					x*30,
-					y*30,
-					30,
-					30,
-					ctx.e.current.x,
-					ctx.e.current.y,
-					30,
-					30
-				);
-			    ctx.e.current.to = setTimeout(
-					function(){explode(x,y)},30
-				);
+			ctx.e.drawImage(
+				explosion,
+				x*30,
+				y*30,
+				30,
+				30,
+				ctx.e.current.x,
+				ctx.e.current.y,
+				30,
+				30
+			);
+		    ctx.e.current.to = setTimeout(
+				function(){explode(x,y)},30
+			);
 		}
 		else{ 
 			clearTimeout(ctx.e.current.to);
