@@ -27,10 +27,10 @@ var Adventure = function(){
 		ENEMY_W: 30,
 		ENEMY_H: 30,
 		ENEMY_SPEED: 50,
-		IMG_DIR: (isProduction===true)
+		IMG_DIR: (this.isProduction===true)
 					? '/examples/canvas-adventure/images/'
-					: '/images',
-		SOUND_DIR: (isProduction===true)
+					: '/images/',
+		SOUND_DIR: (this.isProduction===true)
 					? '/examples/canvas-adventure/sounds/'
 					: '/sounds/',
 		LL: $('#lifeLayer'),
@@ -46,7 +46,8 @@ var Adventure = function(){
 	};
 	
 	// Knight object and sprite
-	this.knight = {x: 30, y:60, w:C.KNIGHT_W, h:C.KNIGHT_H, lbl:'knight', is_hurt:false, health: C.KNIGHT_HEALTH, score:0};
+	this.knight = {x: 30, y:60, w:this.C.KNIGHT_W, h:this.C.KNIGHT_H, lbl:'knight',
+		is_hurt:false, health: this.C.KNIGHT_HEALTH, score:0};
 	var knightPng = new Image(25,30);
 	knightPng.src = this.C.IMG_DIR+'shion3.png';
 	this.knight.png = knightPng;
@@ -54,21 +55,19 @@ var Adventure = function(){
 	//Knife object and sprite
 	this.knife = {x: 0, y: 0, lbl:'weapon'};
 	var knifePng = new Image();
-	knifePng.src = C.IMG_DIR+'Dagger1.gif';
+	knifePng.src = this.C.IMG_DIR+'Dagger1.gif';
 	this.knife.png = knifePng;
 	
 	// Background sprite and explosion sprite map
 	this.bg = new Image();
 	this.bg.src = this.C.IMG_DIR+'dungeon1.png';
 	this.explosion = new Image();
-	this.explosion.src = C.IMG_DIR+'explosprite.png';
+	this.explosion.src = this.C.IMG_DIR+'explosprite.png';
 	
 	// Enemy sprite and object
 	this.enemyPng = new Image(25,30);
 	this.enemyPng.src = this.C.IMG_DIR+'badguy.png';
 	this.enemy_on_screen = false;
-	
-	
 	
 	this.ctx.e.current = {}
 	this.ctx.w.current = {}
@@ -88,6 +87,25 @@ var Adventure = function(){
 	this.soundKey = {};
 }
 
+var adventure;
+$(document).ready(function($){
+	adventure = new Adventure();
+	window.addEventListener('keydown',adventure.doKeyDown,true);
+	var help = 'Tools->Options->Advanced->General';
+	if(navigator.userAgent.match('Macintosh')){ help='Firefox->Preferences->Advanced->General' };
+	
+	var init = function() {
+		$('#help').html(help);
+		$('#bgLayer').focus();
+	 	adventure.tryAnim(320);
+		adventure.tryAnim(0);
+		adventure.drawSprite(adventure.ctx.k.current);
+	}
+	
+	adventure.explosion.onload = init;
+});
+
+
 Adventure.prototype.createEnemy = function(){
 	return {x: this.C.CANVAS_W, y: undefined, w:this.C.ENEMY_W, h:this.C.ENEMY_H, lbl:'enemy', png:this.enemyPng};
 }
@@ -101,7 +119,7 @@ Adventure.prototype.drawSprite = function(sprite){
 
 Adventure.prototype.removeEnemy = function(sprite){
 	this.enemy_on_screen = false;
-	this.ctx.e.clearRect(0,0,.this.C.CANVAS_W,this.C.CANVAS_H);
+	this.ctx.e.clearRect(0,0,this.C.CANVAS_W,this.C.CANVAS_H);
 	this.ctx.e.current = {};
 }
 
@@ -115,29 +133,29 @@ Adventure.prototype.moveEnemy = function(sprite){
 	{
 		sprite.x-=10;
 		this.ctx.e.clearRect(0,0,this.C.CANVAS_W,this.C.CANVAS_H);
-		this.drawSprite.bind(Adventure,sprite);
+		this.drawSprite.bind(adventure,sprite);
 		if(!this.ctx.k.current.is_hurt)
 		if(Math.abs(sprite.x-this.ctx.k.current.x)<=30 && Math.abs(sprite.y-this.ctx.k.current.y)<=30) {
-			this.hurtKnight.bind(Adventure,this.ctx.k.current);
+			this.hurtKnight.bind(adventure,this.ctx.k.current);
 		}
-		sprite.to = setTimeout(function(e){ Adventure.prototype.moveEnemy.bind(Adventure,sprite) }, this.C.ENEMY_SPEED);
+		sprite.to = setTimeout(function(e){ Adventure.prototype.moveEnemy.bind(adventure,sprite) }, this.C.ENEMY_SPEED);
 	}
 	else
 	{
 		clearTimeout(this.ctx.e.current.to);
 		this.ctx.e.clearRect(0,0,this.C.CANVAS_W,this.C.CANVAS_H);
-		this.removeEnemy.bind(Adventure);
+		this.removeEnemy.bind(adventure);
 		this.ctx.k.current.score -= 50;
-		Adventure.prototype.updateScore.bind(Adventure);
+		Adventure.prototype.updateScore.bind(adventure);
 	}	
 }
 
 Adventure.prototype.enemyAttack = function(){
 	var that = this;
-	this.ctx.e.current = new this.createEnemy.bind(Adventure);
+	this.ctx.e.current = new this.createEnemy.bind(adventure);
 	this.ctx.e.current.y = this.generateRandomEntry();
 	if(typeof this.ctx.e.current.y!=='undefined'){
-		setTimeout(function(){ that.moveEnemy.bind(Adventure,that.ctx.e.current) },this.C.ENEMY_SPEED);
+		setTimeout(function(){ that.moveEnemy.bind(adventure,that.ctx.e.current) },this.C.ENEMY_SPEED);
 		this.enemy_on_screen = true;
 	}
 }
@@ -146,15 +164,19 @@ Adventure.prototype.enemyAttack = function(){
 Adventure.prototype.tryAnim = function(i){
 	var that = this, i;
 	if(i > -322){
+		
 		this.ctx.b.save();
 		this.ctx.b.drawImage(this.bg, i, 0);
-		if(Math.random()>.998 && i%2==0 && !this.enemy_on_screen){ enemyAttack() }
-		setTimeout(function(){ Adventure.prototype.tryAnim.bind(Adventure,i-2) },10);
+		if(Math.random()>.998 && i%2==0 && !this.enemy_on_screen){
+			this.enemyAttack() 
+		}
+		setTimeout(function(){ Adventure.prototype.tryAnim.bind(adventure,i-2) },10);
 		this.ctx.b.restore();
 	}
 	else {
+		console.log(i);
 		this.ctx.b.save();
-		setTimeout(function(){ Adventure.prototype.tryAnim.bind(Adventure,this.C.BG_WIDTH) },10);
+		setTimeout(function(){ Adventure.prototype.tryAnim.bind(adventure,this.C.BG_WIDTH) },10);
 		this.ctx.b.restore();
 	}
 }
@@ -178,7 +200,7 @@ Adventure.prototype.moveSprite = function(sprite,dir){
 		break;
 		default: //move nowhere
 	}
-	this.drawSprite.bind(Adventure,sprite);
+	this.drawSprite.bind(adventure,sprite);
 }
 
 //Player controls
@@ -187,16 +209,16 @@ Adventure.prototype.doKeyDown = function(e) {
 	e.preventDefault();
 	switch(charCode)
 	{
-		case 38: this.moveSprite.bind(Adventure,this.ctx.k.current,'u'); break;
-		case 40: this.moveSprite.bind(Adventure,this.ctx.k.current,'d'); break;
-		case 37: this.moveSprite.bind(Adventure,this.ctx.k.current,'l'); break;
-		case 39: this.moveSprite.bind(Adventure,this.ctx.k.current,'r'); break;
+		case 38: adventure.moveSprite.bind(adventure,adventure.ctx.k.current,'u'); break;
+		case 40: adventure.moveSprite.bind(adventure,adventure.ctx.k.current,'d'); break;
+		case 37: adventure.moveSprite.bind(adventure,adventure.ctx.k.current,'l'); break;
+		case 39: adventure.moveSprite.bind(adventure,adventure.ctx.k.current,'r'); break;
 		case 83: 
-			clearTimeout(this.ctx.w.current.to);
-			this.ctx.w.current = {};
-			this.shootKnife(this.ctx.k.current.x+5, this.ctx.k.current.y+5);
+			clearTimeout(adventure.ctx.w.current.to);
+			adventure.ctx.w.current = {};
+			adventure.shootKnife(adventure.ctx.k.current.x+5, adventure.ctx.k.current.y+5);
 		break;
-		case 32: if(!this.jumping){ this.jumpKnight.bind(Adventure,0) }; break;
+		case 32: if(!adventure.jumping){ adventure.jumpKnight.bind(adventure,0) }; break;
 	}
 }
 
@@ -204,16 +226,16 @@ Adventure.prototype.moveKnife = function(){
 	if(this.knife.x < this.C.CANVAS_W){
 		this.knife.x+=10;
 		this.ctx.w.clearRect(0,0,this.C.CANVAS_W,this.C.CANVAS_H);
-		this.drawSprite.bind(Adventure,this.knife);
+		this.drawSprite.bind(adventure,this.knife);
 		if(this.ctx.w.current.x && this.ctx.e.current.x){
 			if((this.ctx.e.current.x-this.ctx.w.current.x)<=20 &&
 				Math.abs(this.ctx.w.current.y-this.ctx.e.current.y)<=30){
-				this.destroyEnemy.bind(Adventure);
+				this.destroyEnemy.bind(adventure);
 				this.ctx.k.current.score += 100;
-				this.updateScore.bind(Adventure);
+				this.updateScore.bind(adventure);
 			}
 		}
-		this.ctx.w.current.to = setTimeout(Adventure.prototype.moveKnife.bind(Adventure), 30);
+		this.ctx.w.current.to = setTimeout(Adventure.prototype.moveKnife.bind(adventure), 30);
 	}
 }
 
@@ -222,7 +244,7 @@ Adventure.prototype.shootKnife = function (x,y){
 	this.knife.y = y;
 	this.ctx.w.current = this.knife;
 	//playSound() TODO get woosh sound
-	this.moveKnife.bind(Adventure);
+	this.moveKnife.bind(adventure);
 }
 	
     
@@ -266,8 +288,8 @@ Adventure.prototype.jumpKnight = function(x){
 	sprite.x+=1;
 	sprite.y=y;
 
-	this.drawSprite.bind(Adventure,sprite);
-	setTimeout(function(){ Adventure.prototype.jumpKnight.bind(Adventure,x+1) },50);
+	this.drawSprite.bind(adventure,sprite);
+	setTimeout(function(){ Adventure.prototype.jumpKnight.bind(adventure,x+1) },50);
 }
 
 // Our hero is dead, what shall we do but inform the player in an obvious manner
@@ -282,7 +304,7 @@ Adventure.prototype.killKnight = function(){
 	gameOver.style.opacity=0;
 	var lD = $(this.C.LL).html('<span class="dead">d</span> <span class="dead">e</span> <span class="dead">a</span> <span class="dead">d</span>');
 	var complete=0;
-	$(this.C.LL).children('span').each(function(i){$(this).animate({opacity:'.6'},5000,that.gameOverMask.bind(Adventure,gameOver,mask,body))});
+	$(this.C.LL).children('span').each(function(i){$(this).animate({opacity:'.6'},5000,that.gameOverMask.bind(adventure,gameOver,mask,body))});
 }
 	
 Adventure.prototype.gameOverMask = function (gameOver,mask,body){
@@ -308,34 +330,34 @@ Adventure.prototype.hurtKnight = function(knight){
 	knight.health--;
 	if(knight.health<=0){
 		knight.is_hurt=true;
-		this.killKnight.bind(Adventure);
+		this.killKnight.bind(adventure);
 	}
 	else{
-		this.playSound.bind(Adventure,'hurt.wav',false);
+		this.playSound.bind(adventure,'hurt.wav',false);
 		var lifeStr = 'Life: ';
 		for(var i=0;i<knight.health;i++){ lifeStr+=' &hearts;' }
 		this.C.LL.html(lifeStr);
 		knight.is_hurt=true;
 		this.ctx.k.globalAlpha = .5;
-		this.moveSprite.bind(Adventure,knight);
+		this.moveSprite.bind(adventure,knight);
 		
 		setTimeout(function(){ 
 			knight.is_hurt=false;
 			that.ctx.k.globalAlpha=1;
-			that.moveSprite.bind(Adventure,knight)},
+			that.moveSprite.bind(adventure,knight)},
 		2000);
 	}
 }
 
 //little bit of currying
-Adventure.prototype.moveKnight = function(dir){ this.moveSprite.bind(Adventure,knight, dir) }
+Adventure.prototype.moveKnight = function(dir){ this.moveSprite.bind(adventure,knight, dir) }
 	
 	
 	
 // Explosion animation through image map
 Adventure.prototype.explode = function(x,y){
 	var that = this;
-	if(x==3){this.playSound.bind.(Adventure,'explosion.wav',false)}
+	if(x==3){this.playSound.bind(adventure,'explosion.wav',false)}
 	x--;
 	if(x===-1){
 		y--;
@@ -355,12 +377,12 @@ Adventure.prototype.explode = function(x,y){
 				30
 			);
 			this.ctx.e.current.to = setTimeout(
-				function(){Adventure.prototype.explode.bind(Adventure,x,y)},30
+				function(){Adventure.prototype.explode.bind(adventure,x,y)},30
 			);
 	}
 	else{ 
 		clearTimeout(that.ctx.e.current.to);
-		this.removeEnemy.bind(Adventure); 
+		this.removeEnemy.bind(adventure); 
 	}
 }
 	
@@ -369,11 +391,5 @@ Adventure.prototype.destroyEnemy = function(){
 	clearTimeout(this.ctx.w.current.to);
 	this.ctx.w.current = {};
 	this.ctx.e.clearRect(0,0,this.C.CANVAS_W,this.C.CANVAS_H);
-	this.explode.bind(Adventure,4,3);
-}
-	
-	
-
-	
-	
+	this.explode.bind(adventure,4,3);
 }
