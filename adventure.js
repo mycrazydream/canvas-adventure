@@ -318,6 +318,7 @@ var Adventure = function(){
 		moveKnife();
 	}
 	
+	//TODO add pause sound and visual cue
 	var pause = function(){
 		Adventure.prototype.paused=!Adventure.prototype.paused;
 		if(Adventure.prototype.paused===false){
