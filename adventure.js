@@ -308,6 +308,7 @@ var Adventure = function(){
 		}
 	}
 
+	//TODO add upgrade ability to shoot multiple knives on screen
 	var shootKnife = function (x,y){
 		knife.x = x;
 		knife.y = y;
