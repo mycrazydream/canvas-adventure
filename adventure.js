@@ -54,6 +54,8 @@ var Adventure = function(){
 		return {x: C.CANVAS_W, y: undefined, w:C.ENEMY_W, h:C.ENEMY_H, lbl:'enemy', png:enemyPng};
 	}
 	
+	Adventure.prototype.paused = false;
+	
 	//TODO add sound features
     var sound = {
 		death: 'death.wav',
@@ -103,7 +105,10 @@ var Adventure = function(){
 		ctx.e.current = new createEnemy();
 		ctx.e.current.y = generateRandomEntry();
 		if(typeof ctx.e.current.y!=='undefined'){
-			setTimeout(function(){ moveEnemy(ctx.e.current) },C.ENEMY_SPEED);
+			ctx.e.current.to = setTimeout(
+				function(){ moveEnemy(ctx.e.current) },
+				C.ENEMY_SPEED
+			);
 			enemy_on_screen = true;
 		}
 	}
@@ -311,6 +316,27 @@ var Adventure = function(){
 		moveKnife();
 	}
 	
+	var pause = function(){
+		Adventure.prototype.paused=!Adventure.prototype.paused;
+		if(Adventure.prototype.paused===false){
+			Adventure.prototype.animate(320);
+			Adventure.prototype.animate(0);
+			if(enemy_on_screen===true){
+				//restore enemy approach
+				ctx.e.current.to = setTimeout(
+					function(){ moveEnemy(ctx.e.current) },
+					C.ENEMY_SPEED
+				);
+			}
+		}
+		else{
+			if(enemy_on_screen===true){
+				//pause enemy
+				clearTimeout(ctx.e.current.to);
+			}
+		}
+	}
+	
 	Adventure.prototype.drawSprite = function(sprite){
 		var c = ctx[sprite.lbl.substring(0,1)];
 		c.save();
@@ -321,19 +347,27 @@ var Adventure = function(){
 	//Get the game animation going, and continuing as the background 
 	//is one scrolling sprite.
 	Adventure.prototype.animate = function(i){
-		if(i > -322){
-			ctx.b.save();
-			ctx.b.drawImage(bg, i, 0);
-			if(Math.random()>.998 && i%2==0 && !enemy_on_screen){
-				 enemyAttack() 
+		if(!Adventure.prototype.paused){//stop constant animation
+			if(i > -322){
+				ctx.b.save();
+				ctx.b.drawImage(bg, i, 0);
+				if(Math.random()>.998 && i%2==0 && !enemy_on_screen){
+					 enemyAttack() 
+				}
+				ctx.b.to1 = setTimeout(
+					function(){ Adventure.prototype.animate(i-2) },
+					10
+				);
+				ctx.b.restore();
 			}
-			setTimeout(function(){ Adventure.prototype.animate(i-2) },10);
-			ctx.b.restore();
-		}
-		else {
-			ctx.b.save();
-			setTimeout(function(){ Adventure.prototype.animate(C.BG_WIDTH) },10);
-			ctx.b.restore();
+			else {
+				ctx.b.save();
+				ctx.b.to2 = setTimeout(
+					function(){ Adventure.prototype.animate(C.BG_WIDTH) },
+					10
+				);
+				ctx.b.restore();
+			}
 		}
 	}
 	
@@ -341,21 +375,27 @@ var Adventure = function(){
 	Adventure.prototype.doKeyDown = function(e) {
 		var charCode = (typeof e.which == "number") ? e.which : e.keyCode;
 		e.preventDefault();
-		switch(charCode)
-		{
-			case 38: 
-			moveSprite(ctx.k.current,'u'); 
-			break;
-			case 40: moveSprite(ctx.k.current,'d'); break;
-			case 37: moveSprite(ctx.k.current,'l'); break;
-			case 39: moveSprite(ctx.k.current,'r'); break;
-			case 83: 
-				clearTimeout(ctx.w.current.to);
-				ctx.w.current = {};
-				shootKnife(ctx.k.current.x+5, ctx.k.current.y+5);
-			break;
-			case 32: if(!this.jumping){ jumpKnight(0) }; break;
+		if(Adventure.prototype.paused===false){//don't respond to controls, we're frozen
+			switch(charCode)
+			{
+				case 38: 
+				moveSprite(ctx.k.current,'u'); 
+				break;
+				case 40: moveSprite(ctx.k.current,'d'); break;
+				case 37: moveSprite(ctx.k.current,'l'); break;
+				case 39: moveSprite(ctx.k.current,'r'); break;
+				case 83: 
+					clearTimeout(ctx.w.current.to);
+					ctx.w.current = {};
+					shootKnife(ctx.k.current.x+5, ctx.k.current.y+5);
+				break;
+				case 80: pause(); break; 
+				case 32: if(!this.jumping){ jumpKnight(0) }; break;
+			}
+		}else if(charCode===80){
+			pause();
 		}
+		
 	}
 	return {
 		'ctx':ctx, 
