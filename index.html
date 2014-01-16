@@ -5,22 +5,22 @@
 <link rel="stylesheet" href="adventure-style.css" type="text/css" media="screen" title="adventure-game-style" charset="utf-8">
 <script src="adventure.js"></script>
 <script>
-var adv;
+var adventure;
 $(document).ready(function($){
-	adv = new Adventure();
-	window.addEventListener('keydown',adv.doKeyDown,true);
+	adventure = new Adventure();
+	window.addEventListener('keydown',adventure.doKeyDown,true);
 	var help = 'Tools->Options->Advanced->General';
 	if(navigator.userAgent.match('Macintosh')){ help='Firefox->Preferences->Advanced->General' };
 	
 	var init = function() {
 		$('#help').html(help);
 		$('#bgLayer').focus();
-	 	adv.tryAnim(320);
-		adv.tryAnim(0);
-		adv.drawSprite(adv.ctx.k.current);
+	 	adventure.animate(320);
+		adventure.animate(0);
+		adventure.drawSprite(adventure.ctx.k.current);
 	}
 	
-	adv.explosion.onload = init;
+	adventure.explosion.onload = init;
 });
 </script>
 <link>
