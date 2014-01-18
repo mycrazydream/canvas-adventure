@@ -15,9 +15,9 @@ $(document).ready(function($){
 	var init = function() {
 		$('#help').html(help);
 		$('#bgLayer').focus();
-	 	adventure.animate(320);
-		adventure.animate(0);
-		adventure.drawSprite(adventure.ctx.k.current);
+	 	adventure.animateBG(320);
+		adventure.animateBG(0);
+		adventure.drawSprite(adventure.ctx.m.current);
 	}
 	
 	adventure.explosion.onload = init;

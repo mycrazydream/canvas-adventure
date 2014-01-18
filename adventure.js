@@ -3,16 +3,16 @@ var get = function(id){ var el = document.getElementById(id); return el; }
 var Adventure = function(){
 	
 	/* Constants
-	Change to alter gameplay. Simple change would be to alter KNIGHT_HEALTH to adjust difficulty. 
+	Change to alter gameplay. Simple change would be to alter CHIEF_HEALTH to adjust difficulty. 
 	I would not change LL or the sprite dimensions unless you plan on changing the sprites. */
 	var isProduction = (new RegExp('mycrazydream')).test(document.location.href);
 	var C = {
 		URL: document.location.href,
 		CANVAS_W: 300,
 		CANVAS_H: 160,
-		KNIGHT_W: 25,
-		KNIGHT_H: 30,
-		KNIGHT_HEALTH: 5,
+		CHIEF_W: 30,
+		CHIEF_H: 45,
+		CHIEF_HEALTH: 5,
 		ENEMY_W: 30,
 		ENEMY_H: 30,
 		ENEMY_SPEED: 50,
@@ -22,17 +22,46 @@ var Adventure = function(){
 		SOUND_DIR: (isProduction===true)
 					? '/examples/canvas-adventure/sounds/'
 					: '/sounds/',
+		SPRITE_DIR: (isProduction===true)
+					? '/examples/canvas-adventure/sprites/'
+					: '/sprites/',
 		LL: $('#lifeLayer'),
 		BG_WIDTH: 320
 	};
 	
 	var that = this; //identifier so the functions don't get uppity
 	
-	// Knight object and sprite
-	var knight = {x: 30, y:60, w:C.KNIGHT_W, h:C.KNIGHT_H, lbl:'knight', is_hurt:false, health: C.KNIGHT_HEALTH, score:0};
-	var knightPng = new Image(25,30);
-	knightPng.src = C.IMG_DIR+'shion3.png';
-	knight.png = knightPng;
+	var resetControls = function(){
+		this.left = this.right = this.up = this.down = false;
+		this.controls = false;
+	}
+	resetControls();
+	
+	// masterChief object and sprite
+	var masterChief = {
+		x:60,
+		y:100,
+		frameX: 30, 
+		frameY: 0, 
+		w:C.CHIEF_W, 
+		h:C.CHIEF_H, 
+		lbl:'master_chief', 
+		is_hurt:false, 
+		health: C.CHIEF_HEALTH, 
+		score:0,
+		panel: {
+			frames:6,
+			rows:1,
+			columns:6,
+			w:30,
+			h:45
+		},
+		png: (function(){
+			var masterChiefPng = new Image(30,45);
+			masterChiefPng.src = C.SPRITE_DIR+'mc_running.png';
+			return masterChiefPng;
+		})()
+	};
 	
 	//Knife object and sprite
 	var knife = {x: 0, y: 0, lbl:'weapon'};
@@ -56,7 +85,6 @@ var Adventure = function(){
 	
 	Adventure.prototype.paused = false;
 	
-	//TODO add sound features
 	var sound = {
 		death: 'death.wav',
 		damage: 'damage.wav',
@@ -73,8 +101,8 @@ var Adventure = function(){
 	ctx.w = get('weaponLayer').getContext("2d");
 	ctx.w.current = {};
 	ctx.b = get('bgLayer').getContext("2d");
-	ctx.k = get('playerLayer').getContext("2d");
-	ctx.k.current = knight;
+	ctx.m = get('playerLayer').getContext("2d");
+	ctx.m.current = masterChief;
 	ctx.e = get('enemyLayer').getContext("2d");
 	ctx.e.current = {};
     
@@ -115,9 +143,9 @@ var Adventure = function(){
 	}
 	
 	// Added jump ability to hero
-	var jumpKnight = function(x){
-		var c = ctx.k,
-			o = ctx.k.current;
+	var jumpMasterChief = function(x){
+		var c = ctx.m,
+			o = ctx.m.current;
 		if(x>10){ this.jumping=false;return; }
 		else if(x===0){
 			this.jumping=true;
@@ -131,36 +159,50 @@ var Adventure = function(){
 		o.y=y;
 
 		Adventure.prototype.drawSprite(o);
-		setTimeout(function(){ jumpKnight(x+1) },50);
+		setTimeout(function(){ jumpMasterChief(x+1) },50);
 	}
 	
 	
 
-	var moveSprite = function(o,dir){
-		var c = ctx[o.lbl.substring(0,1)];
-		c.clearRect(o.x,o.y,o.w,o.h);
+	var moveSprite = function(sprite,dir,panel){
+		var c = ctx[sprite.lbl.substring(0,1)];
+		c.clearRect(sprite.x,sprite.y,sprite.w,sprite.h);
 		switch(dir)
 		{	
 			case 'u':
-				if(o.y > 30){ o.y-=10; }
+				if(sprite.y > 30){
+					this.up = true; 
+					sprite.y-=2; 
+				}
 			break;
 			case 'd':
-				if(o.y < 120){ o.y+=10; }
+				if(sprite.y < 120){ 
+					this.down = true;
+					sprite.y+=2; 
+				}
 			break;
 			case 'l':
-				if(o.x > 30){ o.x-=10; }
+				if(sprite.x > 30){ 
+					this.left = true;
+					sprite.x-=2; 
+				}
 			break;
 			case 'r':
-				if(o.x < 120){ o.x+=10; }
+				if(sprite.x < 120){ 
+					this.right = true;
+					sprite.x+=2; 
+				}
 			break;
 			default://move nowhere
 		}
-		Adventure.prototype.drawSprite(o);
+		this.controls=true;
+		Adventure.prototype.drawSprite(sprite);
+		resetControls();
 	}
 
 	// Our hero is dead, what shall we do but inform the player in an obvious manner
-	var killKnight = function(){
-		clearTimeout(ctx.k.current.to);
+	var killMasterChief = function(){
+		clearTimeout(ctx.m.current.to);
 		window.removeEventListener('keydown',that.doKeyDown,true);
 		var body = document.getElementsByTagName('body')[0];
 		var mask = document.createElement('div');
@@ -196,11 +238,11 @@ var Adventure = function(){
 	}
 	
 	// Collision detection, deplete hero's life. Kill him if life reaches 0.
-	var hurtKnight = function(o){
+	var hurtMasterChief = function(o){
 		o.health--;
 		if(o.health<=0){
 			o.is_hurt=true;
-			killKnight();
+			killMasterChief();
 		}
 		else{
 			playSound('hurt.wav',false);
@@ -208,19 +250,19 @@ var Adventure = function(){
 			for(var i=0;i<o.health;i++){ lifeStr+=' &hearts;' }
 			C.LL.html(lifeStr);
 			o.is_hurt=true;
-			ctx.k.globalAlpha = .5;
+			ctx.m.globalAlpha = .5;
 			moveSprite(o);
  			
 			setTimeout(function(){ 
 				o.is_hurt=false;
-				ctx.k.globalAlpha=1;
+				ctx.m.globalAlpha=1;
 				moveSprite(o)},
 			2000);
 		}
 	}
 	
 	//little bit of currying
-	var moveKnight = function(dir){ moveSprite(knight, dir) }
+	var moveMasterChief = function(dir){ moveSprite(masterChief, dir) }
 	
 	var moveEnemy = function(o){
 		if(o.x > 0)
@@ -228,9 +270,9 @@ var Adventure = function(){
 			o.x-=10;
 			ctx.e.clearRect(0,0,C.CANVAS_W,C.CANVAS_H);
 			Adventure.prototype.drawSprite(o);
-			if(!ctx.k.current.is_hurt)
-			if(Math.abs(o.x-ctx.k.current.x)<=30 && Math.abs(o.y-ctx.k.current.y)<=30) {
-				hurtKnight(ctx.k.current);
+			if(!ctx.m.current.is_hurt)
+			if(Math.abs(o.x-ctx.m.current.x)<=30 && Math.abs(o.y-ctx.m.current.y)<=30) {
+				hurtMasterChief(ctx.m.current);
 			}
 			o.to = setTimeout(function(e){ moveEnemy(o) }, C.ENEMY_SPEED);
 		}
@@ -239,8 +281,8 @@ var Adventure = function(){
 			clearTimeout(ctx.e.current.to);
 			ctx.e.clearRect(0,0,C.CANVAS_W,C.CANVAS_H);
 			removeEnemy();
-			ctx.k.current.score -= 50;
-			updateScore(ctx.k.current.score);
+			ctx.m.current.score -= 50;
+			updateScore(ctx.m.current.score);
 		}	
 	}
 	
@@ -301,8 +343,8 @@ var Adventure = function(){
 				if((ctx.e.current.x-ctx.w.current.x)<=20 &&
 					Math.abs(ctx.w.current.y-ctx.e.current.y)<=30){
 					destroyEnemy();
-					ctx.k.current.score += 100;
-					updateScore(ctx.k.current.score);
+					ctx.m.current.score += 100;
+					updateScore(ctx.m.current.score);
 				}
 			}
 			ctx.w.current.to = setTimeout(moveKnife, 30);
@@ -322,8 +364,8 @@ var Adventure = function(){
 	var pause = function(){
 		Adventure.prototype.paused=!Adventure.prototype.paused;
 		if(Adventure.prototype.paused===false){
-			Adventure.prototype.animate(320);
-			Adventure.prototype.animate(0);
+			Adventure.prototype.animateBG(320);
+			Adventure.prototype.animateBG(0);
 			if(enemy_on_screen===true){
 				//restore enemy approach
 				ctx.e.current.to = setTimeout(
@@ -340,16 +382,41 @@ var Adventure = function(){
 		}
 	}
 	
+	var animateSprite = function(canvas, sprite, frame){
+		if(frame>sprite.panel.frames){ frame = 0; }
+		canvas.save();
+		canvas.drawImage(sprite.png, sprite.frameX*frame, sprite.frameY, sprite.panel.w, sprite.panel.h, sprite.x, sprite.y, sprite.panel.w, sprite.panel.h);
+		canvas.restore();
+		if(this.controls===true){
+			this.heroTO = setTimeout(function(){ animateSprite(canvas,sprite,++frame); }, 500);
+		}
+		else{
+			this.controls = false;
+			clearTimeout(this.heroTO);
+		}
+	}
+	
 	Adventure.prototype.drawSprite = function(sprite){
 		var c = ctx[sprite.lbl.substring(0,1)];
-		c.save();
-		c.drawImage(sprite.png, sprite.x, sprite.y);
-		c.restore();
+
+		if($.type(sprite.panel)==='object'){
+			if($.type(sprite.panel.w)!=='number' || $.type(sprite.panel.h)!=='number'){ 
+				throw new TypeError('sprite.panel.w or sprite.panel.h are not numbers') 
+			}
+			else { //animate our image using sprite panel
+				animateSprite(c,sprite,0);
+			}
+		}
+		else{
+			c.save();
+			c.drawImage(sprite.png, sprite.x, sprite.y);
+			c.restore();
+		}
 	};
 	
 	//Get the game animation going, and continuing as the background 
 	//is one scrolling sprite.
-	Adventure.prototype.animate = function(i){
+	Adventure.prototype.animateBG = function(i){
 		if(!Adventure.prototype.paused){//stop constant animation
 			if(i > -322){
 				ctx.b.save();
@@ -358,7 +425,7 @@ var Adventure = function(){
 					 enemyAttack() 
 				}
 				ctx.b.to1 = setTimeout(
-					function(){ Adventure.prototype.animate(i-2) },
+					function(){ Adventure.prototype.animateBG(i-2) },
 					10
 				);
 				ctx.b.restore();
@@ -366,7 +433,7 @@ var Adventure = function(){
 			else {
 				ctx.b.save();
 				ctx.b.to2 = setTimeout(
-					function(){ Adventure.prototype.animate(C.BG_WIDTH) },
+					function(){ Adventure.prototype.animateBG(C.BG_WIDTH) },
 					10
 				);
 				ctx.b.restore();
@@ -382,28 +449,34 @@ var Adventure = function(){
 			switch(charCode)
 			{
 				case 38: 
-				moveSprite(ctx.k.current,'u'); 
+					if(!this.up){ moveSprite(ctx.m.current,'u') }
 				break;
-				case 40: moveSprite(ctx.k.current,'d'); break;
-				case 37: moveSprite(ctx.k.current,'l'); break;
-				case 39: moveSprite(ctx.k.current,'r'); break;
+				case 40: 
+					if(!this.down){ moveSprite(ctx.m.current,'d') }
+				break;
+				case 37: 
+					if(!this.left){ moveSprite(ctx.m.current,'l') }
+				break;
+				case 39: 
+					if(!this.right){ moveSprite(ctx.m.current,'r') }
+				break;
 				case 83: 
 					clearTimeout(ctx.w.current.to);
 					ctx.w.current = {};
-					shootKnife(ctx.k.current.x+5, ctx.k.current.y+5);
+					shootKnife(ctx.m.current.x+5, ctx.m.current.y+5);
 				break;
 				case 80: pause(); break; 
-				case 32: if(!this.jumping){ jumpKnight(0) }; break;
+				case 32: if(!this.jumping){ jumpMasterChief(0) }; break;
 			}
 		}else if(charCode===80){
 			pause();
 		}
-		
 	}
+	
 	return {
 		'ctx':ctx, 
 		'explosion': explosion, 
-		'animate': Adventure.prototype.animate,
+		'animateBG': Adventure.prototype.animateBG,
 		'doKeyDown': Adventure.prototype.doKeyDown,
 		'drawSprite': Adventure.prototype.drawSprite
 	};
