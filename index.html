@@ -8,15 +8,17 @@
 var adventure;
 $(document).ready(function($){
 	adventure = new Adventure();
-	window.addEventListener('keydown',adventure.doKeyDown,true);
+	
 	var help = 'Tools->Options->Advanced->General';
 	if(navigator.userAgent.match('Macintosh')){ help='Firefox->Preferences->Advanced->General' };
 	
 	var init = function() {
 		$('#help').html(help);
-		$('#bgLayer').focus();
-	 	adventure.animateBG(320);
-		adventure.animateBG(0);
+		
+		window.addEventListener("keydown", function(e){ adventure.doKeyDown(e) }, true);
+		window.requestAnimationFrame(adventure.animateBG);
+	 	//adventure.animateBG(320);
+		//adventure.animateBG(0);
 		adventure.drawSprite(adventure.ctx.m.current);
 	}
 	
@@ -26,33 +28,43 @@ $(document).ready(function($){
 <link>
 </head>
 <body>
+<br>
+<p style="border:1px solid #333;border-radius:3px;background-color:#f5f5f5;padding:4px;margin:8px;">
+This is by no means a production ready game, merely something I was playing around with to test out the capabilities of canvas and javascript animation
+in the browser. There are not even levels, or a boss, merely the shell of some gameplay.
+I have the code on Github, https://github.com/mycrazydream, or of course you can just view the source. It's all javascript and sprites. Of
+course it is much easier to grab with git. I've had trouble running it in Firefox on OS X recently as some of the gameplay keys have been taken over by the
+browser and I haven't fixed it yet. Chrome definitely works though. I will probably improve/add-to it as time goes on.
+</p>
 <div id='gametitle'>
 	<h1>Canvas Adventure</h1>
-	<h2>version 0.08</h2>
+	<h2>version 1.00</h2>
 </div>
-<div id='windowcontainer'>
-<canvas id="bgLayer" class="gameLayer" height="160" width="300"></canvas>
+<div id="windowcontainer">
 
-<canvas id="playerLayer" class="gameLayer" height="160" width="300">
-Your browser does not support canvas tag. <a href="http://getfirefox.com">Go get FireFox</a>
-</canvas>
 
-<canvas id="weaponLayer" class="gameLayer" height="160" width="300"></canvas>
+	<canvas id="canvasCt" class="gameLayer" height="160" width="300"></canvas>
+	<canvas id="playerLayer" class="gameLayer" height="160" width="300">
+	Your browser does not support canvas tag. <a href="http://getfirefox.com">Go get FireFox</a>
+	</canvas>
+	<img id="bgLayer" class="gameLayer" src="images/dungeon1.png" width="300" height="160" title="One">
+	<img id="bgLayer2" class="gameLayer" src="images/dungeon1.png" width="300" height="160" title="Two">
+	<canvas id="weaponLayer" class="gameLayer" height="160" width="300"></canvas>
 
-<canvas id="enemyLayer" class="gameLayer" height="160" width="300"></canvas>
+	<canvas id="enemyLayer" class="gameLayer" height="160" width="300"></canvas>
 
-<div id="scoreLayer" class="gameLayer">
-	Score: 0
-</div>
-<div id="lifeLayer" class="gameLayer">
-	Life: &hearts; &hearts; &hearts; &hearts; &hearts;
-</div>
+	<div id="scoreLayer" class="gameLayer">
+		Score: 0
+	</div>
+	<div id="lifeLayer" class="gameLayer">
+		Life: &hearts; &hearts; &hearts; &hearts; &hearts;
+	</div>
 
-</div>
+	</div>
 
-<div id='ctrlpanel'>
-	<p>Arrow keys move around.</p>
-	<p>Spacebar jumps, 's' shoots dagger, and 'p' pauses</p>
-</div>
+	<div id='ctrlpanel' style="border:1px solid #333;border-radius:3px;background-color:#f5f5f5;padding:4px;margin:8px;">
+		<p>Arrow keys move around.</p>
+		<p>Spacebar jumps, 's' shoots dagger, and 'p' pauses</p>
+	</div>
 </body>
 </html>

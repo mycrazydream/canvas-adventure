@@ -15,7 +15,9 @@ body{
 #windowcontainer { 
   position:relative;
   height:160px;
+  width:300px;
   margin-left:12px;
+  overflow:hidden;
 }
 h1 {
   font-size: 100%;
@@ -38,11 +40,24 @@ p {
   top: 0px;
   left: 0px;
 }
+#playerLayer{z-index:1}
 #scoreLayer {
   font-family: arial;
   font-weight: bold;
   color: #FFFFFF;
   left: 10px;
+}
+#bgLayer{
+	height:160px;
+	width:300px;
+	z-index:0;
+	left:0px;
+}
+#bgLayer2{
+	height:160px;
+	width:300px;
+	z-index:0;
+	left:300px;
 }
 #lifeLayer {
   font-family: arial;

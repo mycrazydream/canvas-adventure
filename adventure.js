@@ -17,16 +17,17 @@ var Adventure = function(){
 		ENEMY_H: 30,
 		ENEMY_SPEED: 50,
 		IMG_DIR: (isProduction===true)
-					? '/examples/canvas-adventure/images/'
+					? '/game/images/'
 					: '/images/',
 		SOUND_DIR: (isProduction===true)
-					? '/examples/canvas-adventure/sounds/'
+					? '/game/sounds/'
 					: '/sounds/',
 		SPRITE_DIR: (isProduction===true)
-					? '/examples/canvas-adventure/sprites/'
+					? '/game/sprites/'
 					: '/sprites/',
 		LL: $('#lifeLayer'),
-		BG_WIDTH: 320
+		BG_WIDTH: 320,
+		DIFFICULTY: 1 //Enter 1-5, 1 being easiest 5 being hardest
 	};
 	
 	var that = this; //identifier so the functions don't get uppity
@@ -100,7 +101,6 @@ var Adventure = function(){
 	var ctx = {};
 	ctx.w = get('weaponLayer').getContext("2d");
 	ctx.w.current = {};
-	ctx.b = get('bgLayer').getContext("2d");
 	ctx.m = get('playerLayer').getContext("2d");
 	ctx.m.current = masterChief;
 	ctx.e = get('enemyLayer').getContext("2d");
@@ -146,9 +146,9 @@ var Adventure = function(){
 	var jumpMasterChief = function(x){
 		var c = ctx.m,
 			o = ctx.m.current;
-		if(x>10){ this.jumping=false;return; }
+		if(x>10){ that.jumping=false;return; }
 		else if(x===0){
-			this.jumping=true;
+			that.jumping=true;
 			this.originalX = o.x;
 			this.originalY = o.y;
 		}
@@ -172,25 +172,25 @@ var Adventure = function(){
 			case 'u':
 				if(sprite.y > 30){
 					this.up = true; 
-					sprite.y-=2; 
+					sprite.y-=4; 
 				}
 			break;
 			case 'd':
 				if(sprite.y < 120){ 
 					this.down = true;
-					sprite.y+=2; 
+					sprite.y+=4; 
 				}
 			break;
 			case 'l':
 				if(sprite.x > 30){ 
 					this.left = true;
-					sprite.x-=2; 
+					sprite.x-=4; 
 				}
 			break;
 			case 'r':
 				if(sprite.x < 120){ 
 					this.right = true;
-					sprite.x+=2; 
+					sprite.x+=4; 
 				}
 			break;
 			default://move nowhere
@@ -397,6 +397,7 @@ var Adventure = function(){
 	}
 	
 	Adventure.prototype.drawSprite = function(sprite){
+		$("#canvasCt").focus();
 		var c = ctx[sprite.lbl.substring(0,1)];
 
 		if($.type(sprite.panel)==='object'){
@@ -414,38 +415,84 @@ var Adventure = function(){
 		}
 	};
 	
+	var start 	= null;
+	var bgs		= [document.getElementById("bgLayer"), document.getElementById("bgLayer2")]
 	//Get the game animation going, and continuing as the background 
 	//is one scrolling sprite.
-	Adventure.prototype.animateBG = function(i){
+	Adventure.prototype.animateBG = function(timestamp){
 		if(!Adventure.prototype.paused){//stop constant animation
-			if(i > -322){
+			if (!start) start = 0;
+			start++;
+			
+			bgs[0].style.left = (0-(start*4)) + "px";
+			bgs[1].style.left = (300-(start*4)) + "px";
+			
+			function reset(bg,bg2){
+				bg.style.left 	= "300px";
+				bg2.style.left 	= "0px";
+				start			= 0;
+				return [bg2,bg]
+			}
+			var difficulty = 0;
+			switch(C.DIFFICULTY){
+				case 2:
+					difficulty = .95;
+				break;
+				case 3:
+					difficulty = .925;
+				break;
+				case 4:
+					difficulty = .9;
+				break;
+				case 5:
+					difficulty = .875;
+				break;
+				case 1:
+				default:
+					difficulty = .975;
+				break;
+			}
+			if(Math.random()>difficulty && start%2==0 && !enemy_on_screen){
+				 enemyAttack() 
+			}
+			
+			if (bgs[1].style.left.replace('px','')*1 <= 0 && bgs[0].style.left === '-300px') {
+				bgs = reset(bgs[0], bgs[1]);
+			}
+			
+			window.requestAnimationFrame(Adventure.prototype.animateBG);
+			/*
+			if(i >= -320){
+				console.log(i)
 				ctx.b.save();
 				ctx.b.drawImage(bg, i, 0);
-				if(Math.random()>.998 && i%2==0 && !enemy_on_screen){
-					 enemyAttack() 
-				}
+				
 				ctx.b.to1 = setTimeout(
 					function(){ Adventure.prototype.animateBG(i-2) },
-					10
+					5
 				);
 				ctx.b.restore();
 			}
 			else {
+				console.log(i)
 				ctx.b.save();
 				ctx.b.to2 = setTimeout(
 					function(){ Adventure.prototype.animateBG(C.BG_WIDTH) },
-					10
+					5
 				);
 				ctx.b.restore();
 			}
+			*/
 		}
 	}
 	
 	//Player controls
 	Adventure.prototype.doKeyDown = function(e) {
-		var charCode = (typeof e.which == "number") ? e.which : e.keyCode;
+		var charCode = e.keyCode;
 		e.preventDefault();
+
 		if(Adventure.prototype.paused===false){//don't respond to controls, we're frozen
+		
 			switch(charCode)
 			{
 				case 38: 
@@ -466,7 +513,7 @@ var Adventure = function(){
 					shootKnife(ctx.m.current.x+5, ctx.m.current.y+5);
 				break;
 				case 80: pause(); break; 
-				case 32: if(!this.jumping){ jumpMasterChief(0) }; break;
+				case 32: if(!that.jumping){ jumpMasterChief(0) }; break;
 			}
 		}else if(charCode===80){
 			pause();
