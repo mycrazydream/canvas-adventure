@@ -208,6 +208,7 @@ var Adventure = function(){
 		var mask = document.createElement('div');
 		var gameOver = document.createElement('h1');
 		playSound('death.wav',false);
+		pause();
 		gameOver.style.opacity=0;
 		var lD = $(C.LL).html('<span class="dead">d</span> <span class="dead">e</span> <span class="dead">a</span> <span class="dead">d</span>');
 		var complete=0;
@@ -221,11 +222,14 @@ var Adventure = function(){
 	}
 	
 	var gameOverMask = function (gameOver,mask,body){
-		gameOver.innerHTML				= 'Game Over';
+		gameOver.innerHTML				= 'Game Over<br>Click to reload';
 		gameOver.style.backgroundColor	= '#FF0000',
 		gameOver.style.fontSize			= '13em';
-		gameOver.style.color			= 'DarkRed'
+		gameOver.style.color			= 'DarkRed';
+		gameOver.style.width			= '100%';
+		gameOver.style.height			= '100%';
 		gameOver.style.margin			= '0px';
+		gameOver.style.cursor			= "pointer";
 		mask.style.width				= '100%';
 		mask.style.height				= '100%';
 		mask.style.position				= 'absolute';
@@ -235,6 +239,7 @@ var Adventure = function(){
 		$(gameOver).animate({
 			opacity: ".5"
 		}, 3000, function(){});
+		$(gameOver).on("click",function(){document.location.reload()})
 	}
 	
 	// Collision detection, deplete hero's life. Kill him if life reaches 0.
